@@ -1,413 +1,784 @@
-# Requirements Document: Vector – Ford Feedback-to-Code Autonomous AI Agent
+# FORD – Automated Feedback-to-Code Pipeline
 
-## Executive Summary
+> Turn social media feedback into verified code fixes automatically.
 
-Vector is an autonomous AI agent system designed to transform unstructured social media feedback from X (Twitter) into actionable code changes through automated CI/CD pipelines. By leveraging the Model Context Protocol (MCP) and multi-agent AI architecture, Vector reduces the manual overhead of feedback triage, issue creation, and implementation while maintaining human oversight and quality control.
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 
-This system addresses a critical gap in modern software development: the inability to efficiently process and act upon valuable user feedback scattered across social platforms. Vector automates the entire feedback-to-fix pipeline while ensuring safety, transparency, and developer control.
 
-## Project Objectives
+FORD is an AI-powered developer productivity system that converts unstructured social media feedback into actionable engineering tasks, automatically generating validated code changes and pull requests. It closes the loop between users and developers by transforming tweets, bug reports, and feature requests into structured issues, test-driven code fixes, and CI-verified pull requests.
 
-1. Reduce feedback triage time by 80% through automated classification and prioritization
-2. Enable direct social feedback integration into CI/CD workflows
-3. Maintain code quality through test-first implementation and automated validation
-4. Provide transparent, explainable AI-driven code changes
-5. Close the feedback loop by automatically notifying users of issue resolution
-6. Establish a scalable foundation for multi-platform feedback integration
+---
 
-## Glossary
+## The Problem
 
-- **Vector_System**: The complete multi-agent AI system including all components
-- **Feedback_Monitor**: Component responsible for ingesting X platform data
-- **Classifier_Agent**: AI agent that categorizes and prioritizes feedback
-- **Code_Agent**: AI agent that generates code changes and tests
-- **MCP_Server**: Model Context Protocol server providing tool access
-- **Human_Reviewer**: Developer with approval authority over code changes
-- **Feedback_Item**: A single piece of user feedback from X platform
-- **Issue_Ticket**: Structured GitHub issue created from feedback
-- **Change_Request**: Proposed code modification with tests and reasoning
-- **Feedback_Cluster**: Group of related feedback items about the same topic
-- **Severity_Score**: Numerical priority rating (0-100) assigned to feedback
-- **CI_Pipeline**: Continuous Integration pipeline for automated testing
-- **Engagement_Metric**: Quantitative measure of feedback importance (likes, retweets, replies)
+Modern software teams receive massive amounts of feedback through platforms like X (Twitter), Reddit, Discord, and product communities. However, this feedback pipeline is fundamentally broken:
 
-## Requirements
+- **Feedback is unstructured and scattered** across multiple platforms
+- **Developers must manually triage** thousands of messages
+- **Important issues are missed** in the noise
+- **Converting feedback into tickets is time-consuming** and error-prone
+- **Users rarely know if their feedback resulted in real fixes**
 
-### Requirement 1: Feedback Ingestion from X Platform
+### Why Existing Tools Fail
 
-**User Story:** As a product team, I want to automatically collect user feedback from X posts and replies, so that I can capture valuable insights without manual monitoring.
+| Tool Category | Limitation |
+|--------------|------------|
+| **Bug Trackers** (Jira, Linear) | Require manual issue creation and lack user context |
+| **Customer Support Tools** (Zendesk, Intercom) | Focus on ticket management, not engineering fixes |
+| **Social Listening Tools** (Hootsuite, Sprout) | Collect feedback but don't connect to development workflow |
+| **AI Coding Assistants** (Copilot, Cursor) | Generate code but lack real user context and feedback signals |
 
-#### Acceptance Criteria
+The missing piece is an **automated system that closes the loop from feedback → code → deployment → user update**.
 
-1. WHEN the Feedback_Monitor is configured with X API credentials, THE Vector_System SHALL authenticate and establish a connection to the X API
-2. WHEN monitoring a specified X account or hashtag, THE Feedback_Monitor SHALL retrieve all replies and mentions within the configured time window
-3. WHEN new feedback is detected, THE Vector_System SHALL extract the text content, author information, timestamp, and engagement metrics
-4. WHEN feedback contains spam indicators (promotional links, repeated content, bot patterns), THE Vector_System SHALL filter it from further processing
-5. WHEN the X API rate limit is approached, THE Vector_System SHALL throttle requests to stay within quota limits
+---
 
-### Requirement 2: Feedback Classification and Understanding
+## The Solution
 
-**User Story:** As a developer, I want feedback automatically categorized by type and severity, so that I can focus on the most critical issues first.
+FORD creates an **AI-driven feedback-to-engineering pipeline** that treats social media as a direct input channel for CI/CD workflows.
 
-#### Acceptance Criteria
+```
+Tweets → Issues → Tests → Code → PR → Deployment → User Notification
+```
 
-1. WHEN a Feedback_Item is processed, THE Classifier_Agent SHALL assign it to exactly one category: bug, feature_request, or discussion
-2. WHEN calculating severity, THE Classifier_Agent SHALL compute a Severity_Score between 0 and 100 based on engagement metrics and content analysis
-3. WHEN multiple Feedback_Items discuss the same topic, THE Classifier_Agent SHALL group them into a single Feedback_Cluster
-4. WHEN generating an issue summary, THE Classifier_Agent SHALL produce a structured description containing: problem statement, affected functionality, user impact, and supporting evidence
-5. WHEN feedback language is ambiguous or unclear, THE Classifier_Agent SHALL flag it for human review rather than making assumptions
+Instead of treating social feedback as noise, FORD treats it as **structured developer input**, creating a closed feedback loop between users and engineering teams.
 
-### Requirement 3: GitHub Integration via MCP
+### What FORD Does Automatically
 
-**User Story:** As a developer, I want feedback automatically converted into GitHub issues and branches, so that I can track and manage work items in my existing workflow.
+1. **Collects** user feedback from social media platforms
+2. **Understands** and clusters similar issues using AI
+3. **Prioritizes** feedback based on engagement and impact
+4. **Generates** test-first implementations
+5. **Validates** code through CI pipelines
+6. **Creates** pull requests with context
+7. **Notifies** users when their issues are resolved
 
-#### Acceptance Criteria
+---
 
-1. WHEN a Feedback_Cluster is prioritized for action, THE Vector_System SHALL create an Issue_Ticket in the configured GitHub repository
-2. WHEN creating an Issue_Ticket, THE Vector_System SHALL include labels for category, severity, and automation status
-3. WHEN an Issue_Ticket is approved for implementation, THE Vector_System SHALL create a new git branch with a descriptive name following the pattern "vector/issue-{number}-{slug}"
-4. WHEN code changes are ready, THE Vector_System SHALL create a pull request linking to the original Issue_Ticket
-5. WHEN a pull request is created, THE Vector_System SHALL assign it to the configured Human_Reviewer for approval
+## Key Features
 
-### Requirement 4: Safe Code Modification via MCP
+### 🔄 End-to-End Feedback Automation
 
-**User Story:** As a developer, I want the system to read and modify code safely, so that automated changes don't introduce breaking changes or security vulnerabilities.
-
-#### Acceptance Criteria
-
-1. WHEN the Code_Agent needs to understand existing code, THE Vector_System SHALL use the Filesystem MCP to read relevant source files
-2. WHEN modifying code, THE Code_Agent SHALL only change files within the configured allowed directories
-3. WHEN generating code changes, THE Code_Agent SHALL preserve existing code style, formatting conventions, and architectural patterns
-4. WHEN a proposed change affects multiple files, THE Vector_System SHALL ensure all changes are atomic and consistent
-5. IF a code modification would delete more than 100 lines, THEN THE Vector_System SHALL require explicit human approval before proceeding
-
-### Requirement 5: Test-First Implementation
-
-**User Story:** As a quality engineer, I want tests generated before code changes, so that I can verify correctness and prevent regressions.
-
-#### Acceptance Criteria
-
-1. WHEN implementing a bug fix, THE Code_Agent SHALL first generate a failing test that reproduces the reported issue
-2. WHEN implementing a feature, THE Code_Agent SHALL first generate test cases covering the expected behavior
-3. WHEN tests are generated, THE Vector_System SHALL execute them using the Terminal MCP to verify they fail as expected
-4. WHEN code changes are implemented, THE Vector_System SHALL re-run all tests to verify they pass
-5. WHEN any test fails after code changes, THE Vector_System SHALL not create a pull request and SHALL log the failure for review
-
-### Requirement 6: Automated Build and Validation
-
-**User Story:** As a DevOps engineer, I want automated validation of all changes before PR creation, so that only working code enters the review process.
-
-#### Acceptance Criteria
-
-1. WHEN code changes are complete, THE Vector_System SHALL execute linting tools using the Terminal MCP
-2. WHEN linting is complete, THE Vector_System SHALL execute the full test suite
-3. WHEN tests pass, THE Vector_System SHALL execute the build process to verify compilation
-4. IF any validation step fails, THEN THE Vector_System SHALL halt the automation and create a detailed error report
-5. WHEN all validation passes, THE Vector_System SHALL proceed to pull request creation
-
-### Requirement 7: Feedback Embedding Storage
-
-**User Story:** As a data scientist, I want feedback stored with semantic embeddings, so that I can identify patterns and similar issues over time.
-
-#### Acceptance Criteria
-
-1. WHEN a Feedback_Item is processed, THE Vector_System SHALL generate a semantic embedding vector using a configured language model
-2. WHEN storing feedback, THE Vector_System SHALL persist the embedding to the Database MCP along with metadata
-3. WHEN clustering feedback, THE Vector_System SHALL query similar embeddings using vector similarity search
-4. WHEN retrieving historical feedback, THE Vector_System SHALL return results ranked by semantic similarity to the query
-5. WHEN the embedding model is updated, THE Vector_System SHALL provide a migration path to recompute existing embeddings
-
-### Requirement 8: Human-in-the-Loop Approval
-
-**User Story:** As a development lead, I want to review and approve all automated changes, so that I maintain control over what code enters the codebase.
-
-#### Acceptance Criteria
-
-1. WHEN a Change_Request is ready, THE Vector_System SHALL present it to the Human_Reviewer with full context and reasoning
-2. WHEN presenting a Change_Request, THE Vector_System SHALL include: original feedback, proposed changes, test results, and AI reasoning
-3. WHEN a Human_Reviewer approves a Change_Request, THE Vector_System SHALL proceed with pull request creation
-4. WHEN a Human_Reviewer rejects a Change_Request, THE Vector_System SHALL log the rejection reason and halt automation
-5. WHEN a Human_Reviewer requests modifications, THE Vector_System SHALL allow iterative refinement before final approval
-
-### Requirement 9: Explainable AI Reasoning
-
-**User Story:** As a developer, I want to understand why the AI made specific decisions, so that I can trust and validate its recommendations.
-
-#### Acceptance Criteria
-
-1. WHEN classifying feedback, THE Classifier_Agent SHALL provide a reasoning explanation citing specific text patterns and engagement signals
-2. WHEN generating code changes, THE Code_Agent SHALL document the rationale for each modification
-3. WHEN calculating Severity_Score, THE Vector_System SHALL show the weighted factors contributing to the final score
-4. WHEN clustering feedback, THE Vector_System SHALL explain which features drove the similarity grouping
-5. WHEN presenting any AI decision, THE Vector_System SHALL provide confidence scores and uncertainty indicators
-
-### Requirement 10: Closed-Loop User Notification
-
-**User Story:** As a product manager, I want users automatically notified when their feedback is addressed, so that they know we're listening and responsive.
-
-#### Acceptance Criteria
-
-1. WHEN a pull request addressing feedback is merged, THE Vector_System SHALL identify all original Feedback_Items that were resolved
-2. WHEN notifying users, THE Vector_System SHALL post a reply on X thanking them and linking to the merged change
-3. WHEN multiple users reported the same issue, THE Vector_System SHALL notify all of them
-4. WHEN a notification is sent, THE Vector_System SHALL log it to prevent duplicate notifications
-5. WHEN a user opts out of notifications, THE Vector_System SHALL respect their preference and skip notification
-
-### Requirement 11: Security and Access Control
-
-**User Story:** As a security engineer, I want strict access controls and audit logging, so that the system cannot be exploited or misused.
-
-#### Acceptance Criteria
-
-1. WHEN accessing external APIs, THE Vector_System SHALL use encrypted credential storage and never log sensitive tokens
-2. WHEN modifying code, THE Vector_System SHALL operate with least-privilege file system permissions
-3. WHEN executing terminal commands, THE Vector_System SHALL only allow commands from a pre-approved whitelist
-4. WHEN any system action occurs, THE Vector_System SHALL log it with timestamp, actor, and outcome for audit purposes
-5. IF suspicious activity is detected (unusual API patterns, unauthorized file access), THEN THE Vector_System SHALL immediately halt and alert administrators
-
-### Requirement 12: Performance and Scalability
-
-**User Story:** As a platform engineer, I want the system to handle high feedback volumes efficiently, so that it scales with product growth.
-
-#### Acceptance Criteria
-
-1. WHEN processing feedback, THE Vector_System SHALL handle at least 1000 Feedback_Items per hour
-2. WHEN the feedback queue grows, THE Vector_System SHALL prioritize processing based on Severity_Score
-3. WHEN multiple Change_Requests are in progress, THE Vector_System SHALL process them concurrently up to a configured limit
-4. WHEN system resources are constrained, THE Vector_System SHALL gracefully degrade by queuing work rather than failing
-5. WHEN measuring end-to-end latency, THE Vector_System SHALL complete the full feedback-to-PR cycle within 30 minutes for high-severity items
-
-### Requirement 13: Configuration and Extensibility
-
-**User Story:** As a DevOps engineer, I want flexible configuration options, so that I can adapt the system to different projects and workflows.
-
-#### Acceptance Criteria
-
-1. WHEN deploying Vector_System, THE system SHALL load configuration from environment variables or a config file
-2. WHEN configuring feedback sources, THE Vector_System SHALL support multiple X accounts and hashtags
-3. WHEN configuring code modification rules, THE Vector_System SHALL allow specification of allowed directories, file patterns, and exclusions
-4. WHEN configuring AI models, THE Vector_System SHALL support pluggable model providers (OpenAI, Anthropic, local models)
-5. WHERE custom validation rules are needed, THE Vector_System SHALL support user-defined validation scripts
-
-### Requirement 14: Metrics and Observability
-
-**User Story:** As a product manager, I want visibility into system performance and impact, so that I can measure ROI and identify improvements.
-
-#### Acceptance Criteria
-
-1. WHEN feedback is processed, THE Vector_System SHALL track metrics including: total feedback count, classification distribution, and average Severity_Score
-2. WHEN code changes are generated, THE Vector_System SHALL track: time from feedback to PR, approval rate, and merge rate
-3. WHEN users are notified, THE Vector_System SHALL track: notification delivery rate and user engagement with responses
-4. WHEN viewing metrics, THE Vector_System SHALL provide a dashboard showing key performance indicators over time
-5. WHEN exporting metrics, THE Vector_System SHALL support integration with monitoring tools (Prometheus, Datadog, CloudWatch)
-
-### Requirement 15: Error Handling and Recovery
-
-**User Story:** As a site reliability engineer, I want robust error handling and recovery, so that transient failures don't block the entire pipeline.
-
-#### Acceptance Criteria
-
-1. WHEN an external API call fails, THE Vector_System SHALL retry with exponential backoff up to 3 attempts
-2. WHEN a code generation attempt fails, THE Vector_System SHALL log the error and move to the next queued item
-3. WHEN the CI_Pipeline fails, THE Vector_System SHALL capture logs and present them to the Human_Reviewer
-4. WHEN the system crashes, THE Vector_System SHALL persist its state and resume from the last checkpoint on restart
-5. IF a critical component fails repeatedly, THEN THE Vector_System SHALL enter a safe mode and alert administrators
-
-## Non-Functional Requirements
-
-### Performance
-
-- Feedback classification latency: < 5 seconds per item
-- Code generation latency: < 2 minutes per Change_Request
-- System availability: 99.5% uptime during business hours
-- Database query response time: < 100ms for similarity searches
-
-### Security
-
-- All API credentials encrypted at rest using AES-256
-- All network communication over TLS 1.3 or higher
-- Code modifications logged with cryptographic signatures
-- Compliance with OWASP Top 10 security practices
-
-### Reliability
-
-- Automatic failover for critical components
-- Data backup every 6 hours with 30-day retention
-- Graceful degradation under load
-- Zero data loss guarantee for feedback and audit logs
-
-### Usability
-
-- Human_Reviewer approval interface accessible via web browser
-- Clear, actionable error messages for all failure modes
-- Documentation for all configuration options
-- Setup time < 1 hour for new projects
-
-### Maintainability
-
-- Modular architecture with clear component boundaries
-- Comprehensive logging at INFO, WARN, and ERROR levels
-- Automated health checks for all external dependencies
-- Version-controlled configuration and infrastructure code
-
-## AI/ML Requirements
-
-### Model Selection
-
-- Classification model: Fine-tuned transformer (BERT, RoBERTa) or GPT-4 class LLM
-- Code generation model: GPT-4, Claude 3.5, or equivalent with code specialization
-- Embedding model: text-embedding-3-large or equivalent with 1536+ dimensions
-
-### Model Performance
-
-- Classification accuracy: > 85% on held-out test set
-- Code generation: > 90% of changes pass initial CI validation
-- Embedding quality: > 0.7 average cosine similarity for known duplicates
-
-### Model Safety
-
-- Content filtering to prevent generation of malicious code
-- Output validation to ensure generated code matches intent
-- Confidence thresholds to trigger human review for uncertain cases
-- Regular model evaluation against adversarial examples
-
-## MCP Integration Requirements
-
-### Required MCP Servers
-
-1. **GitHub MCP**: Issue creation, branch management, PR operations
-2. **Filesystem MCP**: Safe read/write access to codebase
-3. **Terminal MCP**: Execute linting, testing, and build commands
-4. **Database MCP**: Vector storage and similarity search
-
-### MCP Security
-
-- Each MCP server operates with minimal required permissions
-- File system access restricted to project directories only
-- Terminal commands limited to pre-approved whitelist
-- All MCP operations logged for audit trail
-
-### MCP Reliability
-
-- Timeout handling for all MCP operations (30 second default)
-- Retry logic for transient failures
-- Fallback strategies when MCP servers are unavailable
-- Health monitoring for all connected MCP servers
-
-## User Roles and Permissions
-
-### Administrator
-
-- Configure system settings and credentials
-- Manage user permissions
-- Access all audit logs and metrics
-- Override any automated decision
-
-### Human Reviewer (Developer)
-
-- Approve or reject Change_Requests
-- Request modifications to proposed changes
-- Access feedback history and reasoning
-- Configure project-specific rules
-
-### Observer (Product Manager)
-
-- View metrics and dashboards
-- Access feedback summaries
-- View Change_Request history
-- No approval authority
-
-## Data Requirements
-
-### Feedback Data
-
-- Retention: 2 years for all feedback items
-- Backup: Daily incremental, weekly full backup
-- Privacy: PII anonymization for public reporting
-- Format: JSON with schema versioning
-
-### Code Change Data
-
-- Retention: Indefinite for all Change_Requests
-- Backup: Synchronized with GitHub repository
-- Audit: Immutable log of all modifications
-- Format: Git-compatible with metadata sidecar
-
-### Metrics Data
-
-- Retention: 1 year at full granularity, 5 years aggregated
-- Backup: Weekly backup to cold storage
-- Export: CSV and JSON formats supported
-- Format: Time-series optimized schema
-
-## Performance KPIs
-
-### Primary Metrics
-
-1. **Feedback Triage Time Reduction**: Target 80% reduction vs. manual process
-2. **Time to Resolution**: Average time from feedback to merged PR < 48 hours
-3. **Automation Success Rate**: > 70% of Change_Requests approved without modification
-4. **False Positive Rate**: < 10% of classified bugs are actually feature requests or discussions
-
-### Secondary Metrics
-
-1. **User Satisfaction**: > 80% positive sentiment in notification responses
-2. **Developer Productivity**: 20% increase in issues closed per sprint
-3. **Code Quality**: No increase in post-merge bug rate
-4. **System Reliability**: < 5 minutes downtime per month
-
-## Constraints and Assumptions
-
-### Constraints
-
-1. Must operate within X API rate limits (300 requests per 15 minutes for free tier)
-2. Must integrate with existing GitHub workflows without disruption
-3. Must not modify production code without human approval
-4. Must comply with Ford data governance and security policies
-5. Initial release supports only JavaScript/TypeScript codebases
-
-### Assumptions
-
-1. Development team has GitHub repository with CI/CD configured
-2. X API access is available and authorized
-3. Feedback is primarily in English language
-4. Codebase has existing test coverage > 60%
-5. Human reviewers respond to approval requests within 24 hours
-
-## Future Extensibility
-
-### Phase 2 Enhancements
-
-1. Multi-platform support (Reddit, Discord, GitHub Discussions)
-2. Support for additional programming languages (Python, Java, Go)
-3. Automated A/B testing of proposed changes
-4. Integration with product analytics for impact measurement
-5. Self-learning from approval/rejection patterns
-
-### Phase 3 Vision
-
-1. Autonomous deployment with automated rollback
-2. Proactive issue detection from code analysis
-3. Cross-repository pattern learning
-4. Natural language query interface for developers
-5. Integration with design tools for UI/UX feedback
-
-## Success Criteria
-
-The Vector system will be considered successful when:
-
-1. 80% reduction in manual feedback triage time is achieved
-2. 70% of generated Change_Requests are approved without modification
-3. Zero security incidents related to automated code changes
-4. Positive feedback from > 80% of development team members
-5. System processes > 500 feedback items per week with < 5% error rate
-
-## Appendix: Glossary of Terms
-
-- **MCP (Model Context Protocol)**: Standardized protocol for AI agents to interact with external tools and services
-- **Feedback-to-Fix Pipeline**: Complete workflow from user feedback ingestion to deployed code change
-- **Semantic Embedding**: Vector representation of text capturing meaning for similarity comparison
-- **Test-First Implementation**: Development approach where tests are written before implementation code
-- **Human-in-the-Loop**: AI system design requiring human approval for critical decisions
-- **CI/CD**: Continuous Integration and Continuous Deployment automated pipeline
-- **Severity Score**: Numerical priority rating combining engagement metrics and content analysis
+Convert social media feedback directly into structured GitHub issues, code patches, and pull requests without manual intervention. FORD monitors configured social platforms, extracts actionable feedback, and initiates the development workflow automatically.
+
+### 🎯 Context-Aware AI Prioritization
+
+Uses engagement signals (likes, retweets, replies) and semantic clustering to determine issue severity. The system analyzes:
+- Engagement metrics (viral tweets get higher priority)
+- Semantic similarity (clusters related feedback)
+- User impact (affected user count)
+- Historical patterns (recurring issues)
+
+### 🔐 Secure MCP Tooling
+
+Uses the **Model Context Protocol (MCP)** to safely allow AI agents to interact with developer tools:
+- **GitHub**: Issue creation, PR management, code review
+- **File Systems**: Safe sandboxed code execution
+- **Terminals**: Controlled command execution
+- **CI Pipelines**: Automated test validation
+
+MCP provides a security boundary that prevents unauthorized actions while enabling powerful automation.
+
+### 🧪 Test-First Development
+
+AI generates comprehensive unit tests before implementing fixes, ensuring:
+- Code correctness through test coverage
+- Regression prevention
+- Clear specification of expected behavior
+- Validation of edge cases
+
+### ✅ CI-Validated Code
+
+Every generated code change passes through automated verification:
+- Linting and code style checks
+- Unit and integration tests
+- Security vulnerability scanning
+- Performance regression tests
+
+### 👤 Human-in-the-Loop Control
+
+Developers maintain full control over the automation:
+- Review AI-generated pull requests before merging
+- Approve or reject proposed changes
+- Provide feedback to improve AI suggestions
+- Override priority decisions
+
+### 🔔 Closed Feedback Loop
+
+Users are automatically notified when their reported issue is resolved, creating transparency and building trust. Notifications include:
+- Link to the merged pull request
+- Explanation of the fix
+- Timeline from report to resolution
+
+---
+
+## System Architecture
+
+FORD is built as a modular, event-driven system with clear separation of concerns.
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                     FORD Architecture                        │
+└─────────────────────────────────────────────────────────────┘
+
+┌──────────────┐      ┌──────────────┐      ┌──────────────┐
+│   X (Twitter)│      │    Reddit    │      │   Discord    │
+│   API Client │      │   Scraper    │      │   Webhook    │
+└──────┬───────┘      └──────┬───────┘      └──────┬───────┘
+       │                     │                     │
+       └─────────────────────┼─────────────────────┘
+                             │
+                    ┌────────▼────────┐
+                    │  Ingestion Layer │
+                    │  (Flask Backend) │
+                    └────────┬────────┘
+                             │
+                    ┌────────▼────────┐
+                    │  AI Analysis     │
+                    │  (Grok Models)   │
+                    │  • Clustering    │
+                    │  • Prioritization│
+                    │  • Summarization │
+                    └────────┬────────┘
+                             │
+                    ┌────────▼────────┐
+                    │  Issue Creation  │
+                    │  (GitHub API)    │
+                    └────────┬────────┘
+                             │
+                    ┌────────▼────────┐
+                    │  Code Generation │
+                    │  (MCP Agent)     │
+                    │  • Test Gen      │
+                    │  • Implementation│
+                    └────────┬────────┘
+                             │
+                    ┌────────▼────────┐
+                    │  CI Validation   │
+                    │  (Sandbox)       │
+                    └────────┬────────┘
+                             │
+                    ┌────────▼────────┐
+                    │  Pull Request    │
+                    │  (GitHub)        │
+                    └────────┬────────┘
+                             │
+                    ┌────────▼────────┐
+                    │  User Notification│
+                    │  (X API)         │
+                    └──────────────────┘
+```
+
+### Component Breakdown
+
+#### Interface Layer
+- **X API Integration**: Real-time tweet collection using streaming API
+- **Chrome Extension**: Browser-based feedback capture for any platform
+- **GitHub CLI Integration**: Issue creation, commits, and pull request management
+
+#### Backend Core (Flask Orchestrator)
+
+**`grok.py`** - AI Reasoning Engine
+- Semantic analysis of feedback
+- Issue clustering using embeddings
+- Priority scoring and ranking
+- Natural language summarization
+
+**`coder.py`** - Code Generation Orchestrator
+- Coordinates test generation and implementation
+- Manages code review and validation
+- Handles multi-file changes
+- Integrates with version control
+
+**`sandbox.py`** - Safe Execution Environment
+- Isolated code execution
+- Resource limits and timeouts
+- Security sandboxing
+- Dependency management
+
+**`testing.py`** - Automated Test Verification
+- Test runner integration
+- Coverage analysis
+- Regression detection
+- Performance benchmarking
+
+#### Data Layer
+
+**PostgreSQL** - Structured Data Storage
+- Feedback records
+- Issue tracking
+- User mappings
+- Audit logs
+
+**pgvector (Supabase)** - Semantic Search
+- Embedding storage
+- Similarity search
+- Clustering support
+- Fast nearest-neighbor queries
+
+#### AI Intelligence
+
+**Grok-1** - Embeddings and Understanding
+- Text embeddings for semantic search
+- Sentiment analysis
+- Entity extraction
+
+**Grok-4-1 Fast Reasoning** - Planning and Analysis
+- Issue prioritization
+- Test case generation
+- Code review
+
+**Grok Code Fast-1** - Code Generation
+- Implementation synthesis
+- Refactoring suggestions
+- Bug fix generation
+
+---
+
+## System Workflow
+
+```mermaid
+flowchart TB
+    A[Social Media Feedback] --> B[Chrome Extension / API]
+    B --> C[Ingestion Service]
+    C --> D[AI Analysis Engine]
+    D --> E{Clustering & Prioritization}
+    E --> F[GitHub Issue Creation]
+    F --> G[Test Generation]
+    G --> H[Code Implementation]
+    H --> I[Sandbox Execution]
+    I --> J{Tests Pass?}
+    J -->|No| K[Retry with Feedback]
+    K --> H
+    J -->|Yes| L[CI Validation]
+    L --> M{CI Pass?}
+    M -->|No| N[Human Review Required]
+    M -->|Yes| O[Create Pull Request]
+    O --> P[Human Approval]
+    P --> Q[Merge to Main]
+    Q --> R[Deploy]
+    R --> S[Notify User]
+    S --> T[Close Feedback Loop]
+```
+
+### Detailed Pipeline Stages
+
+#### 1. INGEST
+- Monitor X API for configured keywords and accounts
+- Chrome extension captures feedback from any web platform
+- Normalize data format across sources
+- Deduplicate entries
+
+#### 2. PLAN
+- Generate embeddings using Grok-1
+- Cluster similar feedback using cosine similarity
+- Identify duplicate or related issues
+- Group by affected component
+
+#### 3. PRIORITIZE
+- Calculate engagement score (likes + retweets + replies)
+- Assess severity from content analysis
+- Count affected users
+- Apply business rules and weights
+- Generate priority ranking
+
+#### 4. IMPLEMENT
+- Create GitHub issue with full context
+- Generate test cases that reproduce the issue
+- Implement fix using Grok Code Fast-1
+- Ensure code follows project conventions
+
+#### 5. VERIFY
+- Run tests in isolated sandbox
+- Execute linting and type checking
+- Perform security scans
+- Validate against CI requirements
+
+#### 6. DEPLOY
+- Create pull request with detailed description
+- Link to original feedback
+- Request human review
+- Auto-merge if approved
+- Trigger deployment pipeline
+
+#### 7. NOTIFY
+- Post reply to original tweet
+- Include PR link and fix description
+- Thank user for feedback
+- Close the feedback loop
+
+---
+
+## Tech Stack
+
+| Layer | Technology | Purpose |
+|-------|-----------|---------|
+| **Frontend** | Next.js | Dashboard and admin interface |
+| | TailwindCSS | Responsive UI styling |
+| | Chrome Extension API | Browser-based feedback capture |
+| **Backend** | Flask (Python) | API orchestration and routing |
+| | asyncio | Async event processing |
+| | Celery | Background task queue |
+| **Database** | PostgreSQL | Structured data storage |
+| | pgvector (Supabase) | Vector embeddings and similarity search |
+| | Redis | Caching and session management |
+| **AI Models** | Grok-1 | Embeddings and semantic understanding |
+| | Grok-4-1 Fast Reasoning | Planning, analysis, and prioritization |
+| | Grok Code Fast-1 | Code generation and fixes |
+| **Integrations** | X API v2 | Tweet collection and posting |
+| | GitHub CLI | Issue and PR management |
+| | GitHub Actions | CI/CD automation |
+| **Automation** | Model Context Protocol (MCP) | Safe AI-tool interaction |
+| | Docker | Sandboxed execution |
+
+---
+
+## Project Structure
+
+```
+ford/
+│
+├── backend/
+│   ├── agent/              # Core AI agent logic
+│   │   ├── agent.py        # Main agent orchestrator
+│   │   └── events.py       # Event system
+│   ├── client/             # LLM client integration
+│   │   └── llm_client.py   # Grok API wrapper
+│   ├── tools/              # MCP tool implementations
+│   │   ├── github.py       # GitHub operations
+│   │   ├── sandbox.py      # Code execution
+│   │   └── testing.py      # Test runner
+│   ├── coder.py            # Code generation orchestrator
+│   ├── grok.py             # AI reasoning engine
+│   ├── app.py              # Flask API server
+│   └── main.py             # CLI entry point
+│
+├── extension/              # Chrome extension
+│   ├── manifest.json       # Extension config
+│   ├── background.js       # Service worker
+│   ├── content.js          # Page scraping
+│   ├── popup.html          # UI
+│   └── config.js           # Settings
+│
+├── frontend/               # Next.js dashboard
+│   ├── components/         # React components
+│   ├── pages/              # Next.js pages
+│   ├── styles/             # CSS modules
+│   └── lib/                # Utilities
+│
+├── database/
+│   ├── schema.sql          # PostgreSQL schema
+│   ├── migrations/         # Database migrations
+│   └── seed.sql            # Sample data
+│
+├── scripts/
+│   ├── setup.sh            # Environment setup
+│   └── deploy.sh           # Deployment script
+│
+├── docker/
+│   ├── Dockerfile          # Container definition
+│   └── docker-compose.yml  # Multi-container setup
+│
+├── .env.example            # Environment template
+├── requirements.txt        # Python dependencies
+├── package.json            # Node.js dependencies
+└── README.md               # This file
+```
+
+---
+
+## Installation
+
+### Prerequisites
+
+- Python 3.10 or higher
+- Node.js 18 or higher
+- PostgreSQL 14 or higher
+- Git
+- Chrome browser (for extension)
+
+### Step 1: Clone Repository
+
+```bash
+git clone https://github.com/yourusername/ford.git
+cd ford
+```
+
+### Step 2: Backend Setup
+
+```bash
+# Create virtual environment
+python -m venv .venv
+
+# Activate virtual environment
+# Windows:
+.venv\Scripts\activate
+# Mac/Linux:
+source .venv/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt
+```
+
+### Step 3: Environment Configuration
+
+```bash
+# Copy environment template
+cp .env.example .env
+
+# Edit .env and add your credentials
+```
+
+Required environment variables:
+
+```env
+# AI Models
+GROK_API_KEY=your_grok_api_key_here
+GROK_MODEL=grok-4-1-fast
+
+# X (Twitter) API
+X_API_KEY=your_x_api_key
+X_API_SECRET=your_x_api_secret
+X_ACCESS_TOKEN=your_access_token
+X_ACCESS_SECRET=your_access_secret
+
+# GitHub
+GITHUB_TOKEN=your_github_personal_access_token
+GITHUB_REPO=username/repository
+
+# Database
+DATABASE_URL=postgresql://user:password@localhost:5432/ford
+SUPABASE_URL=your_supabase_project_url
+SUPABASE_KEY=your_supabase_anon_key
+
+# Flask
+FLASK_SECRET_KEY=your_random_secret_key
+FLASK_ENV=development
+```
+
+### Step 4: Database Setup
+
+```bash
+# Create database
+createdb ford
+
+# Run migrations
+psql -d ford -f database/schema.sql
+
+# Enable pgvector extension
+psql -d ford -c "CREATE EXTENSION IF NOT EXISTS vector;"
+```
+
+### Step 5: Start Backend
+
+```bash
+# Development mode
+python backend/app.py
+
+# Production mode with Gunicorn
+gunicorn -w 4 -b 0.0.0.0:5000 backend.app:app
+```
+
+Backend will be available at `http://localhost:5000`
+
+### Step 6: Frontend Setup (Optional)
+
+```bash
+cd frontend
+
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+```
+
+Frontend will be available at `http://localhost:3000`
+
+### Step 7: Chrome Extension Setup
+
+1. Open Chrome and navigate to `chrome://extensions/`
+2. Enable "Developer mode" (toggle in top right)
+3. Click "Load unpacked"
+4. Select the `extension/` directory
+5. Click the extension icon and configure:
+   - API URL: `http://localhost:5000`
+   - Keywords: `bug, issue, broken, crash, error, help`
+   - Monitored Accounts: `@YourProduct`
+6. Click "Save Configuration"
+
+---
+
+## Usage Example
+
+### Real-World Workflow
+
+**User tweets:**
+```
+@YourProduct Login keeps failing on Android app. 
+Getting "null response" error every time I try to sign in.
+```
+
+**FORD automatically:**
+
+1. **Detects tweet** via X API monitoring
+2. **Analyzes content** using Grok-1:
+   - Platform: Android
+   - Component: Authentication
+   - Error: Null response handling
+   - Severity: High (blocks core functionality)
+
+3. **Clusters feedback** with similar issues:
+   - Found 3 other users reporting same issue
+   - All on Android
+   - Started 2 days ago
+
+4. **Creates GitHub issue** #247:
+   ```markdown
+   ## Login Failure on Android - Null Response Error
+   
+   **Reported by:** 4 users
+   **Platform:** Android
+   **Component:** Authentication
+   **Priority:** High
+   
+   ### User Feedback
+   - @user1: "Login keeps failing on Android..."
+   - @user2: "Can't sign in, null error"
+   - @user3: "Android login broken"
+   
+   ### Analysis
+   Null response suggests API timeout or network error 
+   not being handled gracefully in Android client.
+   ```
+
+5. **Generates test** `test_login_null_response()`:
+   ```python
+   def test_login_null_response():
+       """Test login handles null API response gracefully"""
+       client = AuthClient()
+       
+       # Simulate null response
+       with mock.patch('api.post', return_value=None):
+           result = client.login('user@example.com', 'password')
+           
+       # Should return error, not crash
+       assert result.success == False
+       assert result.error == 'Network error, please try again'
+       assert result.exception is None
+   ```
+
+6. **Implements fix** in `auth_client.py`:
+   ```python
+   def login(self, email: str, password: str) -> LoginResult:
+       try:
+           response = api.post('/auth/login', {
+               'email': email,
+               'password': password
+           })
+           
+           # FIX: Handle null response
+           if response is None:
+               return LoginResult(
+                   success=False,
+                   error='Network error, please try again'
+               )
+           
+           return LoginResult(success=True, token=response.token)
+       except Exception as e:
+           logger.error(f'Login failed: {e}')
+           return LoginResult(success=False, error=str(e))
+   ```
+
+7. **Runs CI validation**:
+   ```
+   ✓ test_login_null_response PASSED
+   ✓ test_login_success PASSED
+   ✓ test_login_invalid_credentials PASSED
+   ✓ Linting passed
+   ✓ Type checking passed
+   ```
+
+8. **Creates pull request** #248:
+   ```markdown
+   ## Fix: Handle null response in Android login
+   
+   Fixes #247
+   
+   ### Changes
+   - Added null check in AuthClient.login()
+   - Returns user-friendly error message
+   - Added test coverage
+   
+   ### Testing
+   - All existing tests pass
+   - New test covers null response case
+   
+   ### User Impact
+   Resolves login failures for 4+ users on Android
+   ```
+
+9. **Notifies users** after merge:
+   ```
+   @user1 Thanks for reporting! We've fixed the Android 
+   login issue. Update should be live in the next release.
+   
+   Fix details: https://github.com/yourorg/repo/pull/248
+   ```
+
+---
+
+## Roadmap
+
+### Phase 1: Core Pipeline (Current)
+- [x] X (Twitter) feedback collection
+- [x] AI-powered issue clustering
+- [x] Automated GitHub issue creation
+- [x] Test-first code generation
+- [x] CI validation
+- [x] Pull request automation
+
+### Phase 2: Multi-Platform Support (Q2 2026)
+- [ ] Reddit integration
+- [ ] Discord webhook support
+- [ ] Slack community monitoring
+- [ ] Email feedback parsing
+- [ ] In-app feedback widget
+
+### Phase 3: Advanced Intelligence (Q3 2026)
+- [ ] Autonomous issue clustering without supervision
+- [ ] Predictive issue detection (catch bugs before users report)
+- [ ] Code review automation
+- [ ] Performance regression detection
+- [ ] Security vulnerability scanning
+
+### Phase 4: Production Scale (Q4 2026)
+- [ ] Multi-repository support
+- [ ] Team collaboration features
+- [ ] Custom workflow definitions
+- [ ] Advanced analytics dashboard
+- [ ] Enterprise SSO integration
+
+### Phase 5: DevOps Integration (2027)
+- [ ] Kubernetes deployment automation
+- [ ] Infrastructure-as-code generation
+- [ ] Monitoring and alerting integration
+- [ ] Rollback automation
+- [ ] A/B testing framework
+
+---
+
+## Hackathon Context
+
+This project was developed for the **AI for Bharat Hackathon 2026** in the **Student Track: AI for Learning and Developer Productivity**.
+
+### Problem Statement Addressed
+
+How can AI improve developer productivity by automating the feedback-to-code pipeline and closing the loop between users and engineering teams?
+
+### Innovation Highlights
+
+1. **Novel Application of MCP**: First system to use Model Context Protocol for safe AI-driven code generation in production workflows
+
+2. **Closed Feedback Loop**: Unlike existing tools, FORD notifies users when their feedback results in actual fixes
+
+3. **Context-Aware Prioritization**: Uses social engagement signals as a proxy for issue severity
+
+4. **Test-First AI**: Generates tests before implementation, ensuring correctness
+
+5. **Production-Ready**: Not just a demo—designed for real engineering teams
+
+### Impact Metrics
+
+- **Time Saved**: Reduces feedback-to-fix cycle from days to hours
+- **User Satisfaction**: Users see their feedback result in real changes
+- **Developer Focus**: Eliminates manual triage and ticket creation
+- **Code Quality**: Test-first approach ensures robust fixes
+
+---
+
+## Contributing
+
+We welcome contributions from the community! Here's how you can help:
+
+### Areas for Contribution
+
+- **New Platform Integrations**: Add support for Reddit, Discord, Slack
+- **AI Model Improvements**: Enhance clustering and prioritization algorithms
+- **Testing**: Expand test coverage and add integration tests
+- **Documentation**: Improve guides and add tutorials
+- **Bug Fixes**: Help us squash bugs and improve stability
+
+### Development Workflow
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/amazing-feature`
+3. Make your changes
+4. Add tests for new functionality
+5. Ensure all tests pass: `pytest`
+6. Commit with clear messages: `git commit -m 'Add amazing feature'`
+7. Push to your fork: `git push origin feature/amazing-feature`
+8. Open a pull request
+
+### Code Standards
+
+- Follow PEP 8 for Python code
+- Use type hints for all functions
+- Write docstrings for public APIs
+- Maintain test coverage above 80%
+- Run linting before committing: `flake8 backend/`
+
+---
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+```
+MIT License
+
+Copyright (c) 2026 FORD Contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+```
+
+---
+
+## Acknowledgements
+
+This project was made possible by:
+
+- **AI for Bharat Hackathon** - For providing the platform and inspiration
+- **AWS** - Cloud infrastructure and services
+- **Grok AI** - Advanced language models for reasoning and code generation
+- **Model Context Protocol** - Safe AI-tool interaction framework
+- **Open Source Community** - Flask, PostgreSQL, Next.js, and countless other tools
+
+Special thanks to all contributors and early adopters who provided feedback and helped shape FORD into a production-ready system.
+
+---
+
+## Contact & Support
+
+- **GitHub Issues**: [Report bugs or request features](https://github.com/yourusername/ford/issues)
+- **Discussions**: [Join the community](https://github.com/yourusername/ford/discussions)
+- **Email**: ford-support@example.com
+- **Twitter**: [@FORDDevTools](https://twitter.com/FORDDevTools)
+
+---
+
+<div align="center">
+
+**Built with ❤️ for developers who listen to their users**
+
+[Documentation](https://ford-docs.example.com) • [Demo](https://ford-demo.example.com) • [Blog](https://ford-blog.example.com)
+
+</div>
