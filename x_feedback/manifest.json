@@ -1,0 +1,45 @@
+{
+    "manifest_version": 3,
+    "name": "Abra Code Abra - Feedback Collector",
+    "version": "1.0.0",
+    "description": "Automatically collect user feedback from Twitter/X and send to your backend",
+    "permissions": [
+      "activeTab",
+      "storage",
+      "scripting"
+    ],
+    "host_permissions": [
+      "https://twitter.com/*",
+      "https://x.com/*",
+      "http://localhost:5100/*",
+      "http://localhost:5000/*",
+      "http://127.0.0.1:5100/*",
+      "http://127.0.0.1:5000/*"
+    ],
+    "background": {
+      "service_worker": "background.js"
+    },
+    "content_scripts": [
+      {
+        "matches": [
+          "https://twitter.com/*",
+          "https://x.com/*"
+        ],
+        "js": ["content.js"],
+        "run_at": "document_idle"
+      }
+    ],
+    "action": {
+      "default_popup": "popup.html",
+      "default_icon": {
+        "16": "icons/icon16.png",
+        "48": "icons/icon48.png",
+        "128": "icons/icon128.png"
+      }
+    },
+    "icons": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  }

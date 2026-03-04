@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Abra Code Abra</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <h1>🪄 Abra Code Abra</h1>
+      <p class="subtitle">Feedback Collector</p>
+    </div>
+
+    <!-- Status Section -->
+    <div class="section">
+      <div class="status-indicator">
+        <div class="status-dot" id="statusDot"></div>
+        <span id="statusText">Disabled</span>
+      </div>
+      
+      <button id="toggleButton" class="button button-primary">
+        Start Collecting
+      </button>
+    </div>
+
+    <!-- Stats Section -->
+    <div class="section stats">
+      <div class="stat-item">
+        <div class="stat-label">Collected Today</div>
+        <div class="stat-value" id="collectedCount">0</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">Last Sync</div>
+        <div class="stat-value" id="lastSync">Never</div>
+      </div>
+    </div>
+
+    <!-- Configuration Section -->
+    <div class="section">
+      <h3>Configuration</h3>
+      
+      <div class="form-group">
+        <label for="apiUrl">Backend API URL</label>
+        <input 
+          type="text" 
+          id="apiUrl" 
+          placeholder="http://localhost:5100"
+          class="input"
+        >
+      </div>
+      
+      <div class="form-group">
+        <label for="keywords">Keywords (comma-separated)</label>
+        <textarea 
+          id="keywords" 
+          placeholder="bug, issue, broken, crash"
+          class="textarea"
+          rows="3"
+        ></textarea>
+        <small>Tweets containing these words will be collected</small>
+      </div>
+      
+      <div class="form-group">
+        <label for="accounts">Monitored Accounts (comma-separated)</label>
+        <textarea 
+          id="accounts" 
+          placeholder="@YourProduct, @YourCompany"
+          class="textarea"
+          rows="2"
+        ></textarea>
+        <small>Collect all tweets mentioning these accounts</small>
+      </div>
+      
+      <button id="saveConfig" class="button button-secondary">
+        Save Configuration
+      </button>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="section">
+      <h3>Quick Actions</h3>
+      <button id="scanNow" class="button button-outline">
+        Scan Current Page
+      </button>
+      <button id="resetCount" class="button button-outline">
+        Reset Counter
+      </button>
+      <button id="openDashboard" class="button button-outline">
+        Open Dashboard
+      </button>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <small>Agentathon 2026 | Presidency University</small>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

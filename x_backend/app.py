@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template_string
 from flask_cors import CORS
 from datetime import datetime
 import json
@@ -14,146 +14,206 @@ stats = {
     'last_collection': None
 }
 
-@app.route('/')
-def home():
-    """Home page with simple dashboard"""
-    return f"""
+def dashboard_html():
+    return """
     <!DOCTYPE html>
     <html>
     <head>
-        <title>Abra Code Abra - Backend</title>
+        <title>Abra Code Abra - Comments Dashboard</title>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
         <style>
-            body {{
+            :root {
+                color-scheme: light;
+            }
+            body {
                 font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-                max-width: 1200px;
+                max-width: 1100px;
                 margin: 0 auto;
-                padding: 40px 20px;
+                padding: 24px 16px 40px;
                 background: #f9fafb;
-            }}
-            .header {{
-                text-align: center;
-                margin-bottom: 40px;
-            }}
-            h1 {{
-                color: #1f2937;
-                font-size: 36px;
-                margin-bottom: 8px;
-            }}
-            .stats {{
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-                gap: 20px;
-                margin-bottom: 40px;
-            }}
-            .stat-card {{
-                background: white;
-                padding: 24px;
-                border-radius: 8px;
-                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            }}
-            .stat-label {{
-                color: #6b7280;
-                font-size: 14px;
-                margin-bottom: 8px;
-            }}
-            .stat-value {{
-                color: #1f2937;
-                font-size: 32px;
-                font-weight: 700;
-            }}
-            .tweets {{
-                background: white;
-                border-radius: 8px;
-                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-                padding: 24px;
-            }}
-            .tweet {{
-                border-left: 4px solid #3b82f6;
-                padding: 16px;
-                margin-bottom: 16px;
-                background: #f9fafb;
-                border-radius: 4px;
-            }}
-            .tweet-meta {{
-                color: #6b7280;
-                font-size: 14px;
-                margin-bottom: 8px;
-            }}
-            .tweet-content {{
-                color: #1f2937;
-                line-height: 1.6;
-            }}
-            .status {{
-                display: inline-block;
-                padding: 4px 12px;
+                color: #111827;
+            }
+            .header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: 12px;
+                margin-bottom: 20px;
+            }
+            .header h1 {
+                margin: 0;
+                font-size: 28px;
+            }
+            .status {
                 background: #10b981;
-                color: white;
-                border-radius: 12px;
+                color: #ffffff;
+                border-radius: 999px;
+                padding: 6px 12px;
                 font-size: 12px;
                 font-weight: 600;
-            }}
-            .empty {{
-                text-align: center;
+            }
+            .stats {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+                gap: 12px;
+                margin-bottom: 20px;
+            }
+            .card {
+                background: #ffffff;
+                border-radius: 10px;
+                padding: 16px;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+            }
+            .label {
+                color: #6b7280;
+                font-size: 13px;
+                margin-bottom: 8px;
+            }
+            .value {
+                font-size: 26px;
+                font-weight: 700;
+            }
+            .list {
+                background: #ffffff;
+                border-radius: 10px;
+                padding: 16px;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+            }
+            .list h2 {
+                margin: 0 0 12px;
+                font-size: 18px;
+            }
+            .item {
+                border-left: 4px solid #3b82f6;
+                padding: 12px;
+                border-radius: 6px;
+                background: #f9fafb;
+                margin-bottom: 10px;
+            }
+            .item-meta {
+                font-size: 13px;
+                color: #6b7280;
+                margin-bottom: 6px;
+                display: flex;
+                gap: 8px;
+                flex-wrap: wrap;
+            }
+            .item-text {
+                line-height: 1.5;
+                white-space: pre-wrap;
+            }
+            .empty {
                 color: #9ca3af;
-                padding: 40px;
-            }}
-            code {{
-                background: #f3f4f6;
-                padding: 2px 6px;
-                border-radius: 4px;
-                font-family: monospace;
-            }}
+                padding: 20px;
+                text-align: center;
+            }
+            a {
+                color: #2563eb;
+                text-decoration: none;
+            }
+            .footer {
+                margin-top: 14px;
+                color: #6b7280;
+                font-size: 12px;
+            }
         </style>
-        <script>
-            // Auto-refresh every 5 seconds
-            setTimeout(() => location.reload(), 5000);
-        </script>
     </head>
     <body>
         <div class="header">
-            <h1>🪄 Abra Code Abra</h1>
-            <p style="color: #6b7280; font-size: 16px;">Feedback Collection Backend</p>
-            <span class="status">Backend Running</span>
+            <h1>🪄 Abra Code Abra Dashboard</h1>
+            <span class="status">Live</span>
         </div>
-        
+
         <div class="stats">
-            <div class="stat-card">
-                <div class="stat-label">Total Collected</div>
-                <div class="stat-value">{stats['total_collected']}</div>
+            <div class="card">
+                <div class="label">Total Comments</div>
+                <div id="totalCollected" class="value">0</div>
             </div>
-            <div class="stat-card">
-                <div class="stat-label">Today's Count</div>
-                <div class="stat-value">{stats['today_count']}</div>
+            <div class="card">
+                <div class="label">Today's Count</div>
+                <div id="todayCount" class="value">0</div>
             </div>
-            <div class="stat-card">
-                <div class="stat-label">Last Collection</div>
-                <div class="stat-value" style="font-size: 16px;">
-                    {stats['last_collection'] or 'Never'}
-                </div>
+            <div class="card">
+                <div class="label">Last Collection</div>
+                <div id="lastCollection" class="value" style="font-size:16px;">Never</div>
             </div>
         </div>
-        
-        <div class="tweets">
-            <h2 style="margin-bottom: 20px;">Recent Feedback</h2>
-            {''.join([f"""
-                <div class="tweet">
-                    <div class="tweet-meta">
-                        <strong>@{tweet['author_username']}</strong> · 
-                        {tweet['created_at'][:10]} · 
-                        <a href="https://twitter.com/i/web/status/{tweet['tweet_id']}" target="_blank" style="color: #3b82f6;">View on Twitter</a>
-                    </div>
-                    <div class="tweet-content">{tweet['content']}</div>
-                </div>
-            """ for tweet in reversed(collected_tweets[-10:])]) or '<div class="empty">No feedback collected yet. Start your Chrome extension!</div>'}
+
+        <div class="list">
+            <h2>Recent Comments</h2>
+            <div id="commentsList" class="empty">No comments collected yet. Start the extension and scan X/Twitter.</div>
         </div>
-        
-        <div style="text-align: center; margin-top: 40px; color: #9ca3af; font-size: 14px;">
-            <p>Backend API: <code>http://localhost:5000/api/extension/collect</code></p>
-            <p>This page auto-refreshes every 5 seconds</p>
-        </div>
+
+        <div class="footer">Auto-updates every 5 seconds · API: /api/dashboard/comments</div>
+
+        <script>
+            function escapeHtml(text) {
+                const map = {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#039;'
+                };
+                return String(text || '').replace(/[&<>"']/g, function(m) { return map[m]; });
+            }
+
+            function renderComments(comments) {
+                const container = document.getElementById('commentsList');
+
+                if (!comments || comments.length === 0) {
+                    container.className = 'empty';
+                    container.innerHTML = 'No comments collected yet. Start the extension and scan X/Twitter.';
+                    return;
+                }
+
+                container.className = '';
+                container.innerHTML = comments.map(function(comment) {
+                    const author = escapeHtml(comment.author_username || 'unknown');
+                    const text = escapeHtml(comment.content || '');
+                    const createdAt = escapeHtml((comment.created_at || '').replace('T', ' ').replace('Z', ''));
+                    const link = comment.url ? '<a href="' + encodeURI(comment.url) + '" target="_blank" rel="noopener noreferrer">Open Source</a>' : '';
+
+                    return '<div class="item">' +
+                        '<div class="item-meta"><strong>@' + author + '</strong><span>' + createdAt + '</span>' + (link ? '<span>' + link + '</span>' : '') + '</div>' +
+                        '<div class="item-text">' + text + '</div>' +
+                    '</div>';
+                }).join('');
+            }
+
+            async function refreshDashboard() {
+                try {
+                    const response = await fetch('/api/dashboard/comments');
+                    const data = await response.json();
+
+                    document.getElementById('totalCollected').textContent = data.stats.total_collected;
+                    document.getElementById('todayCount').textContent = data.stats.today_count;
+                    document.getElementById('lastCollection').textContent = data.stats.last_collection || 'Never';
+                    renderComments(data.comments || []);
+                } catch (error) {
+                    console.error('Dashboard refresh failed:', error);
+                }
+            }
+
+            refreshDashboard();
+            setInterval(refreshDashboard, 5000);
+        </script>
     </body>
     </html>
     """
+
+
+@app.route('/')
+def home():
+    """Default route serves dashboard"""
+    return render_template_string(dashboard_html())
+
+
+@app.route('/dashboard')
+def dashboard():
+    """Dedicated dashboard route for extension popup"""
+    return render_template_string(dashboard_html())
 
 @app.route('/api/health', methods=['GET'])
 def health():
@@ -233,6 +293,16 @@ def extension_stats():
         })
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/dashboard/comments', methods=['GET'])
+def dashboard_comments():
+    """Dashboard data endpoint with most recent comments first."""
+    recent_comments = list(reversed(collected_tweets[-20:]))
+    return jsonify({
+        'stats': stats,
+        'comments': recent_comments
+    })
 
 @app.route('/api/tweets', methods=['GET'])
 def get_tweets():
